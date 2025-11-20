@@ -9,10 +9,10 @@ import { notFound, useSearchParams, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, use } from 'react';
 
 export default function ChatPage({ params }: { params: { category: string }}) {
-  const { category: categoryId } = params;
+  const { category: categoryId } = use(params);
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
