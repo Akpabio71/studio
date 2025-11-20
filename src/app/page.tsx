@@ -6,7 +6,6 @@ import {
   getAuth,
   signInWithPopup,
   GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useForm } from 'react-hook-form';
@@ -29,6 +28,8 @@ import { Logo } from '@/components/Logo';
 import { Chrome, Apple } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { useFirestore } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -38,6 +39,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'landing-hero');
   const auth = getAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -52,7 +54,17 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+       if (firestore && user) {
+        // Create or update user profile on login
+        await setDoc(doc(firestore, "users", user.uid), {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+        }, { merge: true });
+      }
       toast({ title: 'Logged in successfully!' });
       router.push('/categories');
     } catch (error: any) {

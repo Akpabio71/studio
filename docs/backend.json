@@ -44,6 +44,12 @@
         },
         "timestamp": {
           "type": "number"
+        },
+        "messageCount": {
+          "type": "number"
+        },
+        "totalScore": {
+          "type": "number"
         }
       },
       "required": ["userId", "category", "role", "timestamp"]
@@ -66,13 +72,29 @@
             "feedback": {
                 "type": "object",
                 "properties": {}
+            },
+            "avgRating": {
+              "type": "number"
             }
         },
         "required": ["sender", "text", "timestamp"]
+    },
+    "userSettings": {
+      "title": "User Settings",
+      "description": "User-specific application settings.",
+      "type": "object",
+      "properties": {
+        "language": { "type": "string" },
+        "goal": { "type": "string" },
+        "experienceLevel": { "type": "string" },
+        "asdFriendlyMode": { "type": "boolean" },
+        "fontSize": { "type": "string" },
+        "textToSpeech": { "type": "boolean" }
+      }
     }
   },
   "auth": {
-    "providers": ["anonymous"]
+    "providers": ["google.com", "password"]
   },
   "firestore": {
     "/users/{userId}": {
@@ -92,6 +114,12 @@
             "$ref": "#/entities/message"
         },
         "description": "Messages within a conversation."
+    },
+    "/userSettings/{userId}": {
+      "schema": {
+        "$ref": "#/entities/userSettings"
+      },
+      "description": "Stores user-specific settings."
     }
   }
 }

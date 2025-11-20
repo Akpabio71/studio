@@ -30,18 +30,7 @@ export type AIFeedback = RateUserResponseOutput;
 
 export type PerformanceData = {
   date: string;
-  grammar: number;
-  tone: number;
-  clarity: number;
-  pragmatics: number;
   avg: number;
-};
-
-export type RecentMistake = {
-  id: string;
-  original: string;
-  corrected: string;
-  category: string;
 };
 
 export type Conversation = {
