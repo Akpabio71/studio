@@ -19,7 +19,7 @@ export default function ChatPage({ params }: { params: { category: string }}) {
   const router = useRouter();
 
   const roleId = searchParams.get('role');
-  let conversationId = searchParams.get('conversationId');
+  const conversationId = searchParams.get('conversationId');
 
   const categoryInfo = categories.find(c => c.id === categoryId);
 
@@ -64,13 +64,13 @@ export default function ChatPage({ params }: { params: { category: string }}) {
         };
         await setDoc(newConversationRef, newConversation);
         
-        const conversationId = newConversationRef.id;
-        setLocalConversationId(conversationId);
+        const newDocId = newConversationRef.id;
+        setLocalConversationId(newDocId);
 
         const initialMessageForDb = { ...initialAiMessage, timestamp: serverTimestamp() };
-        await addDoc(collection(firestore, 'conversations', conversationId, 'messages'), initialMessageForDb);
+        await addDoc(collection(firestore, 'conversations', newDocId, 'messages'), initialMessageForDb);
         
-        router.replace(`/chat/${categoryId}?role=${roleId}&conversationId=${conversationId}`);
+        router.replace(`/chat/${categoryId}?role=${roleId}&conversationId=${newDocId}`);
       };
       createConversation();
     }
@@ -79,7 +79,7 @@ export default function ChatPage({ params }: { params: { category: string }}) {
 
   const initialMessages = messages.length > 0 ? messages : [initialAiMessage];
 
-  if (userLoading || (!conversationId && !messagesLoading) || (conversationId && messagesLoading)) {
+  if (userLoading || (!localConversationId && !messagesLoading) || (localConversationId && messagesLoading && !messages.length)) {
       return (
           <div className="flex items-center justify-center h-screen">
               <div className="text-lg">Loading chat...</div>
