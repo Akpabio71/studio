@@ -14,9 +14,9 @@ export function AnalyticsSummary() {
     const firestore = useFirestore();
 
     const conversationsQuery = useMemo(() => {
-        if (!firestore || !user) return null;
+        if (!firestore || !user?.uid) return null;
         return query(collection(firestore, 'conversations'), where('userId', '==', user.uid));
-    }, [firestore, user]);
+    }, [firestore, user?.uid]);
 
     const { data: conversations, loading } = useCollection<Conversation>(conversationsQuery);
 

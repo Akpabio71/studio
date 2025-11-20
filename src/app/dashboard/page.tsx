@@ -15,7 +15,7 @@ export default function DashboardPage() {
     const firestore = useFirestore();
 
     const mistakesQuery = useMemo(() => {
-        if (!user || !firestore) return null;
+        if (!user?.uid || !firestore) return null;
         // This is a collection group query, it requires an index in firestore
         // For now, this will likely fail without the index.
         return query(
@@ -26,7 +26,7 @@ export default function DashboardPage() {
             orderBy('timestamp', 'desc'),
             limit(5)
         );
-    }, [user, firestore]);
+    }, [user?.uid, firestore]);
 
     const { data: recentMistakes, loading } = useCollection<Message>(mistakesQuery);
 

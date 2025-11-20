@@ -21,9 +21,9 @@ export function PerformanceChart() {
   const firestore = useFirestore();
 
   const conversationsQuery = useMemo(() => {
-    if (!user || !firestore) return null;
+    if (!user?.uid || !firestore) return null;
     return query(collection(firestore, 'conversations'), where('userId', '==', user.uid), orderBy('timestamp', 'desc'), limit(7));
-  }, [user, firestore]);
+  }, [user?.uid, firestore]);
 
   const { data: conversations, loading } = useCollection<Conversation>(conversationsQuery);
   
