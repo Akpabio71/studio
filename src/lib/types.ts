@@ -9,6 +9,7 @@ import type {
 import type {
     ProvideDetailedFeedbackOutput
 } from '@/ai/flows/provide-detailed-feedback';
+import { Timestamp } from 'firebase/firestore';
 
 
 export type CategoryRole = {
@@ -27,9 +28,9 @@ export type CategoryInfo = {
 
 export interface Message {
   id: string;
-  text: string;
   sender: 'user' | 'ai';
-  timestamp: number;
+  text: string;
+  timestamp: number | Timestamp;
   feedback?: AIFeedback;
 }
 
@@ -56,11 +57,20 @@ export type RecentMistake = {
 
 export type Conversation = {
   id: string;
-  userName: string;
-  lastMessage: string;
-  timestamp: string;
-  unreadCount: number;
-  avatarUrl: string;
+  userId: string;
   category: string;
   role: string;
+  lastMessage: string;
+  timestamp: number | Timestamp;
+  // for client-side display logic, not in firestore
+  userName?: string; 
+  avatarUrl?: string;
+  unreadCount?: number;
 };
+
+export type UserProfile = {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
+}

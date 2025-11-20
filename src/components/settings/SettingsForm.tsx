@@ -9,8 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { profileSettings } from '@/lib/data';
 import { ThemeToggle } from '../ThemeToggle';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useEffect } from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 const settingsSchema = z.object({
   language: z.string(),
@@ -25,21 +28,65 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export function SettingsForm() {
   const { toast } = useToast();
-  const { control, handleSubmit } = useForm<SettingsFormValues>({
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const { data: profileSettings, loading } = useDoc<SettingsFormValues>(`userSettings`, user?.uid || 'guest');
+
+
+  const { control, handleSubmit, reset } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      ...profileSettings,
+      language: 'en-us',
+      goal: 'confidence',
+      experienceLevel: 'intermediate',
       asdFriendlyMode: false,
       textToSpeech: false,
     },
   });
 
-  function onSubmit(data: SettingsFormValues) {
-    console.log(data);
-    toast({
-      title: 'Settings Saved',
-      description: 'Your preferences have been updated.',
-    });
+  useEffect(() => {
+    if (profileSettings) {
+      reset(profileSettings);
+    }
+  }, [profileSettings, reset]);
+
+  async function onSubmit(data: SettingsFormValues) {
+    if (!user || !firestore) {
+        toast({ title: 'Error', description: 'You must be logged in to save settings.', variant: 'destructive' });
+        return;
+    }
+    try {
+        await setDoc(doc(firestore, 'userSettings', user.uid), data, { merge: true });
+        toast({
+          title: 'Settings Saved',
+          description: 'Your preferences have been updated.',
+        });
+    } catch (error: any) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  }
+
+  if (loading) {
+      return (
+          <div className="space-y-8">
+              <Card>
+                  <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+                  <CardContent className="space-y-4">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                  </CardContent>
+              </Card>
+              <Card>
+                  <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+                  <CardContent className="space-y-4">
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                  </CardContent>
+              </Card>
+          </div>
+      )
   }
 
   return (
@@ -56,7 +103,7 @@ export function SettingsForm() {
               name="language"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en-us">English (US)</SelectItem>
@@ -73,7 +120,7 @@ export function SettingsForm() {
               name="goal"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="confidence">Build Confidence</SelectItem>
@@ -90,7 +137,7 @@ export function SettingsForm() {
               name="experienceLevel"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="beginner">Beginner</SelectItem>
