@@ -32,6 +32,7 @@ export interface Message {
   text: string;
   timestamp: number | Timestamp;
   feedback?: AIFeedback;
+  avgRating?: number;
 }
 
 export interface AIFeedback {
@@ -46,6 +47,7 @@ export type PerformanceData = {
   tone: number;
   clarity: number;
   pragmatics: number;
+  avg: number;
 };
 
 export type RecentMistake = {
@@ -66,6 +68,8 @@ export type Conversation = {
   userName?: string; 
   avatarUrl?: string;
   unreadCount?: number;
+  messageCount?: number;
+  totalScore?: number;
 };
 
 export type UserProfile = {

@@ -8,6 +8,7 @@ import type { AIFeedback } from './types';
 export type GetAIFeedbackResult = {
   feedback: AIFeedback;
   aiReply: string;
+  avgRating: number;
 };
 
 const aiReplies: Record<string, string> = {
@@ -31,8 +32,12 @@ export async function getAIFeedback(
     ]);
 
     const aiReply = aiReplies[category.toLowerCase()] || "That's interesting. Can you elaborate?";
+    
+    const { grammar, tone, clarity, pragmaticEffectiveness } = rating;
+    const avgRating = (grammar + tone + clarity + pragmaticEffectiveness) / 4;
 
-    return { feedback: { rating, suggestions, detailedFeedback }, aiReply };
+
+    return { feedback: { rating, suggestions, detailedFeedback }, aiReply, avgRating };
   } catch (error) {
     console.error("Error getting AI feedback:", error);
     // Return a default/error structure
@@ -42,7 +47,8 @@ export async function getAIFeedback(
         suggestions: { suggestions: ['Sorry, I couldn\'t generate suggestions.'] },
         detailedFeedback: { grammarFeedback: '', toneFeedback: '', clarityFeedback: '', pragmaticFeedback: '', correctedMessage: message }
       },
-      aiReply: "I'm having a little trouble understanding. Could you please try rephrasing?"
+      aiReply: "I'm having a little trouble understanding. Could you please try rephrasing?",
+      avgRating: 0,
     };
   }
 }

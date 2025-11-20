@@ -9,8 +9,8 @@ import { ChatMessage } from './ChatMessage';
 import type { Message } from '@/lib/types';
 import { getAIFeedback } from '@/lib/actions';
 import { Skeleton } from '../ui/skeleton';
-import { useUser, useFirestore } from '@/firebase';
-import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { addDoc, collection, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
 
 interface ChatInterfaceProps {
   category: string;
@@ -26,6 +26,8 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  const { data: conversation } = useDoc('conversations', conversationId || 'guest');
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -68,11 +70,11 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
     
     // Update user message with feedback
     if (userMessageRef) {
-        await updateDoc(userMessageRef, { feedback: result.feedback });
+        await updateDoc(userMessageRef, { feedback: result.feedback, avgRating: result.avgRating });
     }
      setMessages(prev =>
       prev.map(msg =>
-        msg.id === userMessage.id ? { ...msg, feedback: result.feedback } : msg
+        msg.id === userMessage.id ? { ...msg, feedback: result.feedback, avgRating: result.avgRating } : msg
       )
     );
 
@@ -86,10 +88,13 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
     const aiMessageForDb = { ...aiMessage, timestamp: serverTimestamp() };
     await addDoc(collection(firestore, 'conversations', conversationId, 'messages'), aiMessageForDb);
 
-    // Update conversation last message
-    await updateDoc(doc(firestore, 'conversations', conversationId), {
+    // Update conversation last message and scores
+    const conversationRef = doc(firestore, 'conversations', conversationId);
+    await updateDoc(conversationRef, {
         lastMessage: result.aiReply,
         timestamp: serverTimestamp(),
+        messageCount: increment(1),
+        totalScore: increment(result.avgRating),
     });
 
 

@@ -1,20 +1,17 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartTooltip, ChartTooltipContent, ChartContainer } from '@/components/ui/chart';
+import { ChartTooltip, ChartTooltipContent, ChartContainer, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { useTheme } from '../ThemeProvider';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { useMemo } from 'react';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { Message, Conversation } from '@/lib/types';
+import { Conversation, PerformanceData } from '@/lib/types';
 import { format } from 'date-fns';
 
 const chartConfig = {
-  grammar: { label: 'Grammar', color: 'hsl(var(--chart-1))' },
-  tone: { label: 'Tone', color: 'hsl(var(--chart-2))' },
-  clarity: { label: 'Clarity', color: 'hsl(var(--chart-3))' },
-  pragmatics: { label: 'Pragmatics', color: 'hsl(var(--chart-4))' },
+  avg: { label: 'Average', color: 'hsl(var(--chart-1))' },
 };
 
 export function PerformanceChart() {
@@ -30,14 +27,24 @@ export function PerformanceChart() {
 
   const { data: conversations, loading } = useCollection<Conversation>(conversationsQuery);
   
-  const performanceHistory = useMemo(() => {
+  const performanceHistory: PerformanceData[] = useMemo(() => {
     if (!conversations) return [];
     
-    // This part is complex because we need to get messages for each conversation,
-    // which would require another hook or data fetching strategy inside a component,
-    // which is not ideal. For now, we will return empty data.
-    // A better implementation would be to denormalize the average scores into the conversation document.
-    return [];
+    return conversations.map(convo => {
+      const avg = (convo.totalScore && convo.messageCount) ? Math.round(convo.totalScore / convo.messageCount) : 0;
+      const date = convo.timestamp && typeof convo.timestamp === 'object' && 'seconds' in convo.timestamp 
+        ? format(new Date(convo.timestamp.seconds * 1000), 'MMM d')
+        : format(new Date(), 'MMM d');
+        
+      return {
+        date,
+        avg,
+        grammar: 0, // Placeholder, not used in chart
+        tone: 0, // Placeholder
+        clarity: 0, // Placeholder
+        pragmatics: 0, // Placeholder
+      }
+    }).reverse();
 
   }, [conversations]);
 
@@ -73,10 +80,8 @@ export function PerformanceChart() {
                 cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
               />
-              <Bar dataKey="grammar" fill="var(--color-grammar)" radius={4} />
-              <Bar dataKey="tone" fill="var(--color-tone)" radius={4} />
-              <Bar dataKey="clarity" fill="var(--color-clarity)" radius={4} />
-              <Bar dataKey="pragmatics" fill="var(--color-pragmatics)" radius={4} />
+               <Legend content={<ChartLegendContent />} />
+              <Bar dataKey="avg" fill="var(--color-avg)" radius={4} />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>}
