@@ -19,12 +19,14 @@ const aiReplies: Record<string, string> = {
 
 export async function getAIFeedback(
   message: string,
-  category: string
+  category: string,
+  role: string,
+  previousMessage: string
 ): Promise<GetAIFeedbackResult> {
   try {
     const [rating, suggestions, detailedFeedback] = await Promise.all([
       rateUserResponse({ message, category }),
-      generateResponseSuggestions({ message, category }),
+      generateResponseSuggestions({ message, category, role, previousMessage }),
       provideDetailedFeedback({ message, category }),
     ]);
 

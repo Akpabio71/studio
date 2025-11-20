@@ -12,8 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateResponseSuggestionsInputSchema = z.object({
+  previousMessage: z.string().describe("The AI's last message to the user."),
   message: z.string().describe('The user message to generate response suggestions for.'),
   category: z.string().describe('The category of the conversation.'),
+  role: z.string().describe('The sub-role within the category.'),
 });
 export type GenerateResponseSuggestionsInput = z.infer<
   typeof GenerateResponseSuggestionsInputSchema
@@ -38,16 +40,22 @@ const prompt = ai.definePrompt({
   name: 'generateResponseSuggestionsPrompt',
   input: {schema: GenerateResponseSuggestionsInputSchema},
   output: {schema: GenerateResponseSuggestionsOutputSchema},
-  prompt: `You are an AI assistant designed to provide alternative response suggestions for user messages in various conversation categories.
+  prompt: `You are an AI assistant designed to help users improve their communication.
+The user is practicing their communication skills in a specific scenario.
 
-  Given the following user message and conversation category, generate at least three alternative response suggestions.
+Conversation Category: {{{category}}}
+Conversation Role: {{{role}}}
 
-  User Message: {{{message}}}
-  Conversation Category: {{{category}}}
+The AI said:
+"{{{previousMessage}}}"
 
-  Ensure the suggestions are optimized for grammar, tone, clarity, and pragmatic effectiveness.
-  Format the suggestions as a JSON array of strings.
-  `, // Ensure valid JSON format
+The User replied:
+"{{{message}}}"
+
+Your task is to provide three better response suggestions for the user. These suggestions should be appropriate and natural replies to the AI's message, guiding the user on how they could have responded more effectively. The user's original reply might be good, or it might be irrelevant. Your suggestions should always be a proper response to the AI's message.
+
+Format the suggestions as a JSON array of strings.
+  `, 
 });
 
 const generateResponseSuggestionsFlow = ai.defineFlow(

@@ -12,10 +12,11 @@ import { Skeleton } from '../ui/skeleton';
 
 interface ChatInterfaceProps {
   category: string;
+  role: string;
   initialMessages: Message[];
 }
 
-export function ChatInterface({ category, initialMessages }: ChatInterfaceProps) {
+export function ChatInterface({ category, role, initialMessages }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,11 +45,13 @@ export function ChatInterface({ category, initialMessages }: ChatInterfaceProps)
       timestamp: Date.now(),
     };
 
+    const lastAIMessage = messages.filter(m => m.sender === 'ai').pop();
+
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
-    const result = await getAIFeedback(input, category);
+    const result = await getAIFeedback(input, category, role, lastAIMessage?.text || '');
 
     setMessages(prev =>
       prev.map(msg =>

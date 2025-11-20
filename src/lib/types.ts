@@ -1,15 +1,28 @@
 import type {
   RateUserResponseOutput,
-  GenerateResponseSuggestionsOutput,
-  ProvideDetailedFeedbackOutput,
 } from '@/ai/flows/rate-user-response';
 
+import type {
+    GenerateResponseSuggestionsOutput
+} from '@/ai/flows/generate-response-suggestions';
+
+import type {
+    ProvideDetailedFeedbackOutput
+} from '@/ai/flows/provide-detailed-feedback';
+
+
+export type CategoryRole = {
+    id: string;
+    name: string;
+    starter: string;
+}
 
 export type CategoryInfo = {
-  id: 'business' | 'casual' | 'social' | 'special-needs-support';
+  id: string;
   name: string;
   description: string;
   icon: React.ElementType;
+  roles: CategoryRole[];
 };
 
 export interface Message {

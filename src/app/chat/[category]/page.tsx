@@ -6,18 +6,26 @@ import type { Message } from '@/lib/types';
 import { categories } from '@/lib/data';
 import { notFound } from 'next/navigation';
 
-export default function ChatPage({ params }: { params: { category: string } }) {
+export default function ChatPage({ params, searchParams }: { params: { category: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
   const categoryInfo = categories.find(c => c.id === params.category);
+  const roleId = searchParams.role || categoryInfo?.roles[0].id;
 
-  if (!categoryInfo) {
+  if (!categoryInfo || !roleId) {
     notFound();
   }
+
+  const roleInfo = categoryInfo.roles.find(r => r.id === roleId);
+
+  if (!roleInfo) {
+    notFound();
+  }
+
 
   const initialMessages: Message[] = [
     {
       id: 'ai-initial',
       sender: 'ai',
-      text: `Welcome to the ${categoryInfo.name} chat! Let's start our conversation. How can I help you today?`,
+      text: roleInfo.starter,
       timestamp: Date.now(),
     },
   ];
@@ -32,10 +40,13 @@ export default function ChatPage({ params }: { params: { category: string } }) {
         </Button>
         <div className="flex items-center gap-3">
             <categoryInfo.icon className="w-6 h-6 text-primary"/>
-            <h1 className="text-lg font-semibold tracking-tight">{categoryInfo.name}</h1>
+            <div>
+                <h1 className="text-lg font-semibold tracking-tight">{categoryInfo.name}</h1>
+                <p className="text-sm text-muted-foreground">{roleInfo.name}</p>
+            </div>
         </div>
       </header>
-      <ChatInterface category={params.category} initialMessages={initialMessages} />
+      <ChatInterface category={params.category} role={roleInfo.id} initialMessages={initialMessages} />
     </div>
   );
 }
