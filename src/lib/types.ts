@@ -27,12 +27,6 @@ export interface Message {
 
 export type AIFeedback = RateUserResponseOutput;
 
-
-export type PerformanceData = {
-  date: string;
-  avg: number;
-};
-
 export type Conversation = {
   id: string;
   userId: string;
@@ -54,3 +48,8 @@ export type UserProfile = {
     displayName: string | null;
     photoURL: string | null;
 }
+
+export type PerformanceData = {
+  date: string;
+  avg: number;
+};

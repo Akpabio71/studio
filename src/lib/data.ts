@@ -1,5 +1,5 @@
 import { Briefcase, MessageSquare, Heart, Users } from 'lucide-react';
-import type { CategoryInfo, PerformanceData, RecentMistake, Conversation } from './types';
+import type { CategoryInfo } from './types';
 
 export const categories: CategoryInfo[] = [
   {
