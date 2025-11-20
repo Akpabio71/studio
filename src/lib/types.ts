@@ -53,3 +53,14 @@ export type RecentMistake = {
   corrected: string;
   category: string;
 };
+
+export type Conversation = {
+  id: string;
+  userName: string;
+  lastMessage: string;
+  timestamp: string;
+  unreadCount: number;
+  avatarUrl: string;
+  category: string;
+  role: string;
+};

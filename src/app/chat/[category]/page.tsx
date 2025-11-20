@@ -5,6 +5,8 @@ import { ChatInterface } from '@/components/chat/ChatInterface';
 import type { Message } from '@/lib/types';
 import { categories } from '@/lib/data';
 import { notFound } from 'next/navigation';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Bot } from 'lucide-react';
 
 export default function ChatPage({ params, searchParams }: { params: { category: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
   const categoryInfo = categories.find(c => c.id === params.category);
@@ -34,16 +36,20 @@ export default function ChatPage({ params, searchParams }: { params: { category:
     <div className="flex flex-col h-screen bg-muted/20">
       <header className="sticky top-0 z-10 flex items-center h-16 px-4 border-b bg-background">
         <Button asChild variant="ghost" size="icon" className="mr-2">
-          <Link href="/categories">
+          <Link href="/conversations">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
         <div className="flex items-center gap-3">
-            <categoryInfo.icon className="w-6 h-6 text-primary"/>
-            <div>
-                <h1 className="text-lg font-semibold tracking-tight">{categoryInfo.name}</h1>
-                <p className="text-sm text-muted-foreground">{roleInfo.name}</p>
-            </div>
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              <Bot className="h-5 w-5" />
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-lg font-semibold tracking-tight">{roleInfo.name}</h1>
+            <p className="text-sm text-muted-foreground">{categoryInfo.name}</p>
+          </div>
         </div>
       </header>
       <ChatInterface category={params.category} role={roleInfo.id} initialMessages={initialMessages} />

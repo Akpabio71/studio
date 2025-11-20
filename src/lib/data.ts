@@ -1,5 +1,5 @@
 import { Briefcase, MessageSquare, Heart, Users } from 'lucide-react';
-import type { CategoryInfo, PerformanceData, RecentMistake } from './types';
+import type { CategoryInfo, PerformanceData, RecentMistake, Conversation } from './types';
 
 export const categories: CategoryInfo[] = [
   {
@@ -45,6 +45,49 @@ export const categories: CategoryInfo[] = [
         { id: 'offering-support', name: 'Offering Support', starter: "I'm here for you. Is there anything I can do to help?" },
         { id: 'talk-through-challenge', name: 'Talking Through a Challenge', starter: "That sounds really tough. Can you tell me more about what's happening?" },
     ]
+  },
+];
+
+export const conversations: Conversation[] = [
+  {
+    id: '1',
+    userName: 'Sales Coach',
+    lastMessage: "Perfect! Let's practice that pitch.",
+    timestamp: '10:42 AM',
+    unreadCount: 2,
+    avatarUrl: 'https://picsum.photos/seed/1/200/200',
+    category: 'business',
+    role: 'sales-pitch'
+  },
+  {
+    id: '2',
+    userName: 'Friend',
+    lastMessage: 'Totally, let’s catch up this weekend!',
+    timestamp: '9:15 AM',
+    unreadCount: 0,
+    avatarUrl: 'https://picsum.photos/seed/2/200/200',
+    category: 'casual',
+    role: 'catching-up'
+  },
+  {
+    id: '3',
+    userName: 'Networking Pro',
+    lastMessage: 'Great connecting with you!',
+    timestamp: 'Yesterday',
+    unreadCount: 0,
+    avatarUrl: 'https://picsum.photos/seed/3/200/200',
+    category: 'social',
+    role: 'networking-event'
+  },
+  {
+    id: '4',
+    userName: 'Support Guide',
+    lastMessage: 'I am here to listen.',
+    timestamp: '2 days ago',
+    unreadCount: 1,
+    avatarUrl: 'https://picsum.photos/seed/4/200/200',
+    category: 'special-needs-support',
+    role: 'expressing-feelings'
   },
 ];
 
