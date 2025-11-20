@@ -11,7 +11,7 @@ import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useMemo, useEffect, useState, use } from 'react';
 
-export default function ChatPage({ params }: { params: { category: string }}) {
+export default function ChatPage({ params }: { params: Promise<{ category: string }> }) {
   const { category: categoryId } = use(params);
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
