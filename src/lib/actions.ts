@@ -3,19 +3,13 @@
 import { rateUserResponse } from '@/ai/flows/rate-user-response';
 import { generateResponseSuggestions } from '@/ai/flows/generate-response-suggestions';
 import { provideDetailedFeedback } from '@/ai/flows/provide-detailed-feedback';
+import { generateAiResponse } from '@/ai/flows/generate-ai-response';
 import type { AIFeedback } from './types';
 
 export type GetAIFeedbackResult = {
   feedback: AIFeedback;
   aiReply: string;
   avgRating: number;
-};
-
-const aiReplies: Record<string, string> = {
-    business: "Thank you for your input. From a business perspective, how would you quantify the impact of this proposal?",
-    casual: "Oh, cool! What makes you say that?",
-    social: "That's so interesting! I'd love to hear more about your experience with that.",
-    'special-needs-support': "Thank you for sharing that with me. It is brave to talk about it. Can you explain how that feels?"
 };
 
 export async function getAIFeedback(
@@ -25,13 +19,19 @@ export async function getAIFeedback(
   previousMessage: string
 ): Promise<GetAIFeedbackResult> {
   try {
-    const [rating, suggestions, detailedFeedback] = await Promise.all([
+    const [rating, suggestions, detailedFeedback, aiResponse] = await Promise.all([
       rateUserResponse({ message, category }),
       generateResponseSuggestions({ message, category, role, previousMessage }),
       provideDetailedFeedback({ message, category }),
+      generateAiResponse({
+        userMessage: message,
+        previousMessage,
+        category,
+        role,
+      }),
     ]);
 
-    const aiReply = aiReplies[category.toLowerCase()] || "That's interesting. Can you elaborate?";
+    const aiReply = aiResponse.response;
     
     const { grammar, tone, clarity, pragmaticEffectiveness } = rating;
     const avgRating = (grammar + tone + clarity + pragmaticEffectiveness) / 4;
