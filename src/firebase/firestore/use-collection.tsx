@@ -21,7 +21,7 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
       setLoading(false);
     }, (error) => {
         const permissionError = new FirestorePermissionError({
-            path: (query as any)._query.path.segments.join('/'),
+            path: (query as any)?._query?.path?.segments.join('/') || '',
             operation: 'list'
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -29,7 +29,7 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
     });
 
     return () => unsubscribe();
-  }, [JSON.stringify(query)]);
+  }, [query ? JSON.stringify(query) : 'null']);
 
   return { data, loading };
 }
