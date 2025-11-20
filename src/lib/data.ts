@@ -46,15 +46,4 @@ export const categories: CategoryInfo[] = [
         { id: 'online-dating-message', name: 'Online Dating Message', starter: "Hi! I saw on your profile that you're into hiking. Me too! What's your favorite trail?" },
     ]
   },
-  {
-    id: 'special-needs-support',
-    name: 'Special Needs Support',
-    description: 'Communicate effectively in supportive and understanding contexts.',
-    icon: Heart,
-    roles: [
-        { id: 'expressing-feelings', name: 'Expressing Feelings', starter: "It's a safe space to talk. How are you feeling right now?" },
-        { id: 'offering-support', name: 'Offering Support', starter: "I'm here for you. Is there anything I can do to help?" },
-        { id: 'talk-through-challenge', name: 'Talking Through a Challenge', starter: "That sounds really tough. Can you tell me more about what's happening?" },
-    ]
-  },
 ];
