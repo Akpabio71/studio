@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './ChatMessage';
-import type { Message } from '@/lib/types';
+import type { Message, AIFeedback } from '@/lib/types';
 import { getAIFeedback } from '@/lib/actions';
 import { Skeleton } from '../ui/skeleton';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { addDoc, collection, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 interface ChatInterfaceProps {
   category: string;
@@ -26,8 +29,6 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  
-  const { data: conversation } = useDoc('conversations', conversationId || 'guest');
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -61,17 +62,50 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
     setInput('');
     setIsLoading(true);
 
-    const userMessageForDb = { ...userMessage, timestamp: serverTimestamp() };
-    const userMessageRef = await addDoc(collection(firestore, 'conversations', conversationId, 'messages'), userMessageForDb);
+    const userMessageForDb = { 
+        text: userMessage.text,
+        sender: userMessage.sender,
+        timestamp: serverTimestamp() 
+    };
+    
+    const messagesCollection = collection(firestore, 'conversations', conversationId, 'messages');
+    
+    let userMessageRefId: string | null = null;
+    try {
+        const docRef = await addDoc(messagesCollection, userMessageForDb);
+        userMessageRefId = docRef.id;
+    } catch(e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: messagesCollection.path,
+            operation: 'create',
+            requestResourceData: userMessageForDb,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsLoading(false);
+        // Revert optimistic UI update
+        setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
+        return;
+    }
+
 
     const lastAIMessage = messages.filter(m => m.sender === 'ai').pop();
 
     const result = await getAIFeedback(currentInput, category, role, lastAIMessage?.text || '');
     
     // Update user message with feedback
-    if (userMessageRef) {
-        await updateDoc(userMessageRef, { feedback: result.feedback, avgRating: result.avgRating });
+    if (userMessageRefId) {
+        const userMessageDocRef = doc(firestore, 'conversations', conversationId, 'messages', userMessageRefId);
+        const feedbackUpdate: { feedback: AIFeedback, avgRating: number } = { feedback: result.feedback, avgRating: result.avgRating };
+        updateDoc(userMessageDocRef, feedbackUpdate).catch(async (serverError) => {
+             const permissionError = new FirestorePermissionError({
+                path: userMessageDocRef.path,
+                operation: 'update',
+                requestResourceData: feedbackUpdate
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
     }
+    
      setMessages(prev =>
       prev.map(msg =>
         msg.id === userMessage.id ? { ...msg, feedback: result.feedback, avgRating: result.avgRating } : msg
@@ -85,18 +119,32 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
       timestamp: Date.now(),
     };
 
-    const aiMessageForDb = { ...aiMessage, timestamp: serverTimestamp() };
-    await addDoc(collection(firestore, 'conversations', conversationId, 'messages'), aiMessageForDb);
+    const aiMessageForDb = { ...aiMessage, id: undefined, timestamp: serverTimestamp() };
+    addDoc(collection(firestore, 'conversations', conversationId, 'messages'), aiMessageForDb).catch(async (serverError) => {
+         const permissionError = new FirestorePermissionError({
+            path: collection(firestore, 'conversations', conversationId, 'messages').path,
+            operation: 'create',
+            requestResourceData: aiMessageForDb
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    });
 
     // Update conversation last message and scores
     const conversationRef = doc(firestore, 'conversations', conversationId);
-    await updateDoc(conversationRef, {
+    const conversationUpdate = {
         lastMessage: result.aiReply,
         timestamp: serverTimestamp(),
         messageCount: increment(1),
         totalScore: increment(result.avgRating),
+    };
+    updateDoc(conversationRef, conversationUpdate).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: conversationRef.path,
+            operation: 'update',
+            requestResourceData: conversationUpdate
+        });
+        errorEmitter.emit('permission-error', permissionError);
     });
-
 
     setMessages(prev => [...prev, aiMessage]);
     setIsLoading(false);
