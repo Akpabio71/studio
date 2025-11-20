@@ -1,15 +1,6 @@
-import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { categories } from '@/lib/data';
 import { AppShell } from '@/components/AppShell';
-import { ArrowRight } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Label } from '@/components/ui/label';
 import { RoleSelector } from './RoleSelector';
 
@@ -34,7 +25,7 @@ export default function CategoriesPage() {
                   <CardDescription>{category.description}</CardDescription>
                    <div className="grid gap-2">
                      <Label htmlFor={`role-select-${category.id}`}>Select a Role</Label>
-                      <RoleSelector category={category} />
+                      <RoleSelector categoryId={category.id} roles={category.roles} />
                   </div>
                 </CardContent>
               </Card>
