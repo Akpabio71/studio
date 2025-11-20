@@ -20,7 +20,8 @@ export default function ChatPage({ params }: { params: { category: string }}) {
   const roleId = searchParams.get('role');
   let conversationId = searchParams.get('conversationId');
 
-  const categoryInfo = categories.find(c => c.id === params.category);
+  const categoryId = params.category;
+  const categoryInfo = categories.find(c => c.id === categoryId);
 
   if (!categoryInfo || !roleId) {
     notFound();
@@ -54,7 +55,7 @@ export default function ChatPage({ params }: { params: { category: string }}) {
         const newConversationRef = doc(collection(firestore, 'conversations'));
         const newConversation = {
           userId: user.uid,
-          category: params.category,
+          category: categoryId,
           role: roleId,
           timestamp: serverTimestamp(),
           lastMessage: roleInfo.starter,
@@ -67,11 +68,11 @@ export default function ChatPage({ params }: { params: { category: string }}) {
         const initialMessageForDb = { ...initialAiMessage, timestamp: serverTimestamp() };
         await addDoc(collection(firestore, 'conversations', conversationId, 'messages'), initialMessageForDb);
         
-        router.replace(`/chat/${params.category}?role=${roleId}&conversationId=${conversationId}`);
+        router.replace(`/chat/${categoryId}?role=${roleId}&conversationId=${conversationId}`);
       };
       createConversation();
     }
-  }, [conversationId, user, firestore, params.category, roleId, roleInfo.starter, router, messages.length, messagesLoading]);
+  }, [conversationId, user, firestore, categoryId, roleId, roleInfo.starter, router, messages.length, messagesLoading, initialAiMessage]);
 
 
   const initialMessages = messages.length > 0 ? messages : [initialAiMessage];
@@ -105,7 +106,7 @@ export default function ChatPage({ params }: { params: { category: string }}) {
         </div>
       </header>
       <ChatInterface
-        category={params.category}
+        category={categoryId}
         role={roleInfo.id}
         initialMessages={initialMessages}
         conversationId={localConversationId}
