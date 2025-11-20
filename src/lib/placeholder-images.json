@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "landing-hero",
+      "description": "Abstract illustration of people communicating, with chat bubbles and connection lines.",
+      "imageUrl": "https://images.unsplash.com/photo-1710874243653-8316e5ef1cc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGNvbW11bmljYXRpb258ZW58MHx8fHwxNzYzNTI3ODIyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract communication"
+    }
+  ]
 }

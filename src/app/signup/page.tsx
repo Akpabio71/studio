@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Chrome, Apple } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,32 +8,31 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Logo } from '@/components/Logo';
-import { Chrome, Apple } from 'lucide-react';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
 
   return (
     <div className="w-full min-h-screen lg:grid lg:grid-cols-2">
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-[350px] gap-8">
           <div className="grid gap-4 text-center">
             <Logo className="justify-center" />
-            <h2 className="text-2xl font-bold tracking-tight">Welcome Back</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Create an Account</h2>
             <p className="text-muted-foreground">
-              Sign in to continue your communication journey.
+              Start mastering communication with AI-powered feedback.
             </p>
           </div>
           <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle>Log In</CardTitle>
+            <CardHeader>
+              <CardTitle>Sign Up</CardTitle>
               <CardDescription>
-                Enter your email below to login to your account.
+                Enter your information to create an account.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline">
+                 <Button variant="outline">
                   <Chrome className="mr-2 h-4 w-4" />
                   Google
                 </Button>
@@ -51,28 +51,28 @@ export default function LoginPage() {
                   </span>
                 </div>
               </div>
+               <div className="grid gap-2">
+                <Label htmlFor="full-name">Full Name</Label>
+                <Input id="full-name" placeholder="Max Robinson" required />
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="m@example.com" required />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="ml-auto inline-block text-sm underline">
-                    Forgot your password?
-                  </Link>
-                </div>
-                <Input id="password" type="password" required />
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" />
               </div>
+             
             </CardContent>
-            <CardFooter className="flex flex-col gap-4">
+             <CardFooter className="flex flex-col gap-4">
               <Button asChild className="w-full">
-                <Link href="/categories">Login</Link>
+                <Link href="/categories">Create Account</Link>
               </Button>
-              <div className="text-center text-sm">
-                Don&apos;t have an account?{' '}
-                <Link href="/signup" className="underline">
-                  Sign up
+               <div className="text-center text-sm">
+                Already have an account?{' '}
+                <Link href="/" className="underline">
+                  Login
                 </Link>
               </div>
             </CardFooter>
