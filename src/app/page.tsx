@@ -30,6 +30,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useFirestore } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -57,13 +59,22 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
        if (firestore && user) {
+        const userProfileData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        };
+        const docRef = doc(firestore, "users", user.uid);
         // Create or update user profile on login
-        await setDoc(doc(firestore, "users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-        }, { merge: true });
+        setDoc(docRef, userProfileData, { merge: true }).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: userProfileData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
       }
       toast({ title: 'Logged in successfully!' });
       router.push('/categories');

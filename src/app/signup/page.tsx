@@ -31,6 +31,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Logo } from '@/components/Logo';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 const signupSchema = z.object({
@@ -62,11 +64,20 @@ export default function SignupPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
        if (firestore && user) {
-        await setDoc(doc(firestore, "users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
+        const userProfileData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        };
+        const docRef = doc(firestore, "users", user.uid);
+        setDoc(docRef, userProfileData).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: userProfileData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
         });
       }
       toast({ title: 'Account created successfully!' });
@@ -93,11 +104,20 @@ export default function SignupPage() {
       });
 
       if (firestore) {
-        await setDoc(doc(firestore, "users", user.uid), {
+        const userProfileData = {
             uid: user.uid,
             email: user.email,
             displayName: values.fullName,
             photoURL: null
+        };
+        const docRef = doc(firestore, "users", user.uid);
+        setDoc(docRef, userProfileData).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: userProfileData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
         });
       }
       toast({ title: 'Account created successfully!' });
