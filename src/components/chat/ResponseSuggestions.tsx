@@ -1,11 +1,11 @@
-import { GenerateResponseSuggestionsOutput } from '@/ai/flows/generate-response-suggestions';
+import { AIFeedback } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Lightbulb, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ResponseSuggestionsProps {
-  suggestions: GenerateResponseSuggestionsOutput;
+  suggestions: AIFeedback['suggestions'];
 }
 
 export function ResponseSuggestions({ suggestions }: ResponseSuggestionsProps) {

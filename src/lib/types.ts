@@ -1,14 +1,4 @@
-import type {
-  RateUserResponseOutput,
-} from '@/ai/flows/rate-user-response';
-
-import type {
-    GenerateResponseSuggestionsOutput
-} from '@/ai/flows/generate-response-suggestions';
-
-import type {
-    ProvideDetailedFeedbackOutput
-} from '@/ai/flows/provide-detailed-feedback';
+import type { RateUserResponseOutput } from '@/ai/flows/rate-user-response';
 import { Timestamp } from 'firebase/firestore';
 
 
@@ -35,11 +25,8 @@ export interface Message {
   avgRating?: number;
 }
 
-export interface AIFeedback {
-  rating: RateUserResponseOutput;
-  suggestions: GenerateResponseSuggestionsOutput;
-  detailedFeedback: ProvideDetailedFeedbackOutput;
-}
+export type AIFeedback = RateUserResponseOutput;
+
 
 export type PerformanceData = {
   date: string;

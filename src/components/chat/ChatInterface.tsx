@@ -130,21 +130,23 @@ export function ChatInterface({ category, role, initialMessages, conversationId 
     });
 
     // Update conversation last message and scores
-    const conversationRef = doc(firestore, 'conversations', conversationId);
-    const conversationUpdate = {
-        lastMessage: result.aiReply,
-        timestamp: serverTimestamp(),
-        messageCount: increment(1),
-        totalScore: increment(result.avgRating),
-    };
-    updateDoc(conversationRef, conversationUpdate).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: conversationRef.path,
-            operation: 'update',
-            requestResourceData: conversationUpdate
+    if (conversationId) {
+        const conversationRef = doc(firestore, 'conversations', conversationId);
+        const conversationUpdate = {
+            lastMessage: result.aiReply,
+            timestamp: serverTimestamp(),
+            messageCount: increment(1),
+            totalScore: increment(result.avgRating),
+        };
+        updateDoc(conversationRef, conversationUpdate).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: conversationRef.path,
+                operation: 'update',
+                requestResourceData: conversationUpdate
+            });
+            errorEmitter.emit('permission-error', permissionError);
         });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+    }
 
     setMessages(prev => [...prev, aiMessage]);
     setIsLoading(false);
