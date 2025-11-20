@@ -5,13 +5,14 @@ import { useFirestore } from '../provider';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError } from '../errors';
 
-export function useDoc<T>(path: string, docId: string) {
+export function useDoc<T>(path: string, docId: string | null | undefined) {
     const firestore = useFirestore();
     const [data, setData] = useState<T | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!firestore || !docId || docId === 'guest') {
+        if (!firestore || !docId) {
+            setData(null);
             setLoading(false);
             return;
         };

@@ -14,6 +14,8 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const settingsSchema = z.object({
   language: z.string(),
@@ -30,7 +32,7 @@ export function SettingsForm() {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
-  const { data: profileSettings, loading } = useDoc<SettingsFormValues>(`userSettings`, user?.uid || 'guest');
+  const { data: profileSettings, loading } = useDoc<SettingsFormValues>(`userSettings`, user?.uid);
 
 
   const { control, handleSubmit, reset } = useForm<SettingsFormValues>({
@@ -55,15 +57,21 @@ export function SettingsForm() {
         toast({ title: 'Error', description: 'You must be logged in to save settings.', variant: 'destructive' });
         return;
     }
-    try {
-        await setDoc(doc(firestore, 'userSettings', user.uid), data, { merge: true });
+    const docRef = doc(firestore, 'userSettings', user.uid);
+    setDoc(docRef, data, { merge: true }).then(() => {
         toast({
           title: 'Settings Saved',
           description: 'Your preferences have been updated.',
         });
-    } catch (error: any) {
-        toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
+    }).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ title: 'Error', description: 'Could not save settings.', variant: 'destructive' });
+    });
   }
 
   if (loading) {
