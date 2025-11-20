@@ -35,8 +35,16 @@ export function AnalyticsSummary() {
         const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-        const lastWeekConversations = conversations.filter(c => c.timestamp && (c.timestamp as any).toDate() > oneWeekAgo);
-        const previousWeekConversations = conversations.filter(c => c.timestamp && (c.timestamp as any).toDate() > twoWeeksAgo && (c.timestamp as any).toDate() <= oneWeekAgo);
+        const lastWeekConversations = conversations.filter(c => {
+            if (!c.timestamp) return false;
+            const timestamp = (c.timestamp as any).toDate ? (c.timestamp as any).toDate() : new Date(c.timestamp);
+            return timestamp > oneWeekAgo;
+        });
+        const previousWeekConversations = conversations.filter(c => {
+            if (!c.timestamp) return false;
+            const timestamp = (c.timestamp as any).toDate ? (c.timestamp as any).toDate() : new Date(c.timestamp);
+            return timestamp > twoWeeksAgo && timestamp <= oneWeekAgo;
+        });
 
         const lastWeekTotalMessages = lastWeekConversations.reduce((acc, c) => acc + (c.messageCount || 0), 0);
         const lastWeekTotalScore = lastWeekConversations.reduce((acc, c) => acc + (c.totalScore || 0), 0);
@@ -46,7 +54,12 @@ export function AnalyticsSummary() {
         const previousWeekTotalScore = previousWeekConversations.reduce((acc, c) => acc + (c.totalScore || 0), 0);
         const previousWeekAvg = previousWeekTotalMessages > 0 ? previousWeekTotalScore / previousWeekTotalMessages : 0;
 
-        const weeklyImprovement = previousWeekAvg > 0 ? Math.round(((lastWeekAvg - previousWeekAvg) / previousWeekAvg) * 100) : (lastWeekAvg > 0 ? 100 : 0);
+        let weeklyImprovement = 0;
+        if (previousWeekAvg > 0) {
+            weeklyImprovement = Math.round(((lastWeekAvg - previousWeekAvg) / previousWeekAvg) * 100);
+        } else if (lastWeekAvg > 0) {
+            weeklyImprovement = 100; // If there was no activity previously, any new activity is 100% improvement.
+        }
         
         return { totalConversations, avgPerformance, weeklyImprovement, isWeeklyImprovementPositive: weeklyImprovement >= 0 };
     }, [conversations]);

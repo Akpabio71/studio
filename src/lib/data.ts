@@ -35,6 +35,17 @@ export const categories: CategoryInfo[] = [
         { id: 'dinner-conversation', name: 'Dinner Conversation', starter: "This food is amazing! Have you tried the risotto?" },
     ]
   },
+   {
+    id: 'dating',
+    name: 'Dating',
+    description: 'Navigate romantic conversations with confidence.',
+    icon: Heart,
+    roles: [
+        { id: 'first-date', name: 'First Date', starter: "This is a nice place! I'm glad we could do this. So, what do you do for fun?" },
+        { id: 'asking-someone-out', name: 'Asking Someone Out', starter: "Hey, I've really enjoyed talking with you. I was wondering if you'd like to get coffee sometime." },
+        { id: 'online-dating-message', name: 'Online Dating Message', starter: "Hi! I saw on your profile that you're into hiking. Me too! What's your favorite trail?" },
+    ]
+  },
   {
     id: 'special-needs-support',
     name: 'Special Needs Support',

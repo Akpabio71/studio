@@ -32,9 +32,11 @@ export function PerformanceChart() {
     
     return conversations.map(convo => {
       const avg = (convo.totalScore && convo.messageCount) ? Math.round(convo.totalScore / convo.messageCount) : 0;
-      const date = convo.timestamp && typeof convo.timestamp === 'object' && 'seconds' in convo.timestamp 
-        ? format(new Date(convo.timestamp.seconds * 1000), 'MMM d')
-        : format(new Date(), 'MMM d');
+      let date = format(new Date(), 'MMM d');
+      if (convo.timestamp) {
+        const timestamp = (convo.timestamp as any).toDate ? (convo.timestamp as any).toDate() : new Date(convo.timestamp);
+        date = format(timestamp, 'MMM d');
+      }
         
       return {
         date,
