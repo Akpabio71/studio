@@ -6,8 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Plus } from 'lucide-react';
-import { useCollection, useUser } from '@/firebase';
+import { Search, Plus, MessageSquare } from 'lucide-react';
+import { useCollection, useUser, useDoc } from '@/firebase';
 import { Conversation, UserProfile } from '@/lib/types';
 import { useMemo } from 'react';
 import { collection, query, where } from 'firebase/firestore';
@@ -74,7 +74,7 @@ export default function ConversationsPage() {
   return (
     <AppShell>
       <div className="container mx-auto px-0 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col h-[calc(100vh-10rem)] bg-card border rounded-lg">
+        <div className="flex flex-col h-[calc(100vh-10rem)] bg-card border rounded-lg animate-fade-in-up">
           <header className="p-4 border-b">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold tracking-tight">Chats</h1>
@@ -108,7 +108,7 @@ export default function ConversationsPage() {
               </div>
             </div>}
             {!loading && conversations.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <div className="flex flex-col items-center justify-center h-full text-center p-8 animate-fade-in-up">
                     <MessageSquare className="w-16 h-16 text-muted-foreground/50" />
                     <h2 className="mt-4 text-xl font-semibold">No Chats Yet</h2>
                     <p className="mt-2 text-muted-foreground">Start a new conversation to see it here.</p>
@@ -118,8 +118,14 @@ export default function ConversationsPage() {
                 </div>
             )}
             <div className="divide-y">
-              {conversations.map(convo => (
-                <ConversationItem key={convo.id} convo={convo} />
+              {conversations.map((convo, index) => (
+                <div
+                  key={convo.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
+                >
+                  <ConversationItem convo={convo} />
+                </div>
               ))}
             </div>
           </div>
