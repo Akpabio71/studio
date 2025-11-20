@@ -11,7 +11,7 @@ import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useMemo, useEffect, useState } from 'react';
 
-export default function ChatPage({ params }: { params: { category: string }}) {
+export default function ChatPage({ params: { category: categoryId } }: { params: { category: string }}) {
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
@@ -20,7 +20,6 @@ export default function ChatPage({ params }: { params: { category: string }}) {
   const roleId = searchParams.get('role');
   let conversationId = searchParams.get('conversationId');
 
-  const categoryId = params.category;
   const categoryInfo = categories.find(c => c.id === categoryId);
 
   if (!categoryInfo || !roleId) {
