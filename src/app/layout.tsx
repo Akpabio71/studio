@@ -3,11 +3,12 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'VerbalEdge',
+  title: 'Chat Sense',
   description: 'Master Communication with AI-Powered Feedback',
 };
 
@@ -25,8 +26,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} font-body antialiased`}>
         <ThemeProvider>
-          {children}
-          <Toaster />
+          <FirebaseClientProvider>
+            {children}
+            <Toaster />
+          </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>

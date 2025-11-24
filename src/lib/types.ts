@@ -1,14 +1,5 @@
-import type {
-  RateUserResponseOutput,
-} from '@/ai/flows/rate-user-response';
-
-import type {
-    GenerateResponseSuggestionsOutput
-} from '@/ai/flows/generate-response-suggestions';
-
-import type {
-    ProvideDetailedFeedbackOutput
-} from '@/ai/flows/provide-detailed-feedback';
+import type { RateUserResponseOutput } from '@/ai/flows/rate-user-response';
+import { Timestamp } from 'firebase/firestore';
 
 
 export type CategoryRole = {
@@ -27,29 +18,38 @@ export type CategoryInfo = {
 
 export interface Message {
   id: string;
-  text: string;
   sender: 'user' | 'ai';
-  timestamp: number;
+  text: string;
+  timestamp: number | Timestamp;
   feedback?: AIFeedback;
+  avgRating?: number;
 }
 
-export interface AIFeedback {
-  rating: RateUserResponseOutput;
-  suggestions: GenerateResponseSuggestionsOutput;
-  detailedFeedback: ProvideDetailedFeedbackOutput;
+export type AIFeedback = RateUserResponseOutput;
+
+export type Conversation = {
+  id: string;
+  userId: string;
+  category: string;
+  role: string;
+  lastMessage: string;
+  timestamp: number | Timestamp;
+  // for client-side display logic, not in firestore
+  userName?: string; 
+  avatarUrl?: string;
+  unreadCount?: number;
+  messageCount?: number;
+  totalScore?: number;
+};
+
+export type UserProfile = {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
 }
 
 export type PerformanceData = {
   date: string;
-  grammar: number;
-  tone: number;
-  clarity: number;
-  pragmatics: number;
-};
-
-export type RecentMistake = {
-  id: string;
-  original: string;
-  corrected: string;
-  category: string;
+  avg: number;
 };

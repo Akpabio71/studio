@@ -1,8 +1,8 @@
-import { ProvideDetailedFeedbackOutput } from '@/ai/flows/provide-detailed-feedback';
+import { AIFeedback } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface DetailedFeedbackProps {
-  feedback: ProvideDetailedFeedbackOutput;
+  feedback: AIFeedback['detailedFeedback'];
 }
 
 export function DetailedFeedback({ feedback }: DetailedFeedbackProps) {

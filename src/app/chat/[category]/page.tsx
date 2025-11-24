@@ -1,52 +1,118 @@
+'use client';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import type { Message } from '@/lib/types';
 import { categories } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { notFound, useSearchParams, useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { useMemo, useEffect, useState, use } from 'react';
 
-export default function ChatPage({ params, searchParams }: { params: { category: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
-  const categoryInfo = categories.find(c => c.id === params.category);
-  const roleId = searchParams.role || categoryInfo?.roles[0].id;
+export default function ChatPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category: categoryId } = use(params);
+  const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const roleId = searchParams.get('role');
+  const conversationId = searchParams.get('conversationId');
+
+  const categoryInfo = categories.find(c => c.id === categoryId);
 
   if (!categoryInfo || !roleId) {
     notFound();
   }
-
+  
   const roleInfo = categoryInfo.roles.find(r => r.id === roleId);
-
+  
   if (!roleInfo) {
     notFound();
   }
 
+  const [localConversationId, setLocalConversationId] = useState(conversationId);
 
-  const initialMessages: Message[] = [
-    {
+  const messagesQuery = useMemo(() => {
+    if (!firestore || !localConversationId) return null;
+    return query(collection(firestore, 'conversations', localConversationId, 'messages'), orderBy('timestamp'));
+  }, [firestore, localConversationId]);
+
+  const { data: messages, loading: messagesLoading } = useCollection<Message>(messagesQuery);
+  
+  const initialAiMessage: Message = {
       id: 'ai-initial',
       sender: 'ai',
       text: roleInfo.starter,
       timestamp: Date.now(),
-    },
-  ];
+  };
+
+  useEffect(() => {
+    if (!conversationId && user && firestore && !messagesLoading && messages.length === 0) {
+      const createConversation = async () => {
+        const newConversationRef = doc(collection(firestore, 'conversations'));
+        const newConversation = {
+          userId: user.uid,
+          category: categoryId,
+          role: roleId,
+          timestamp: serverTimestamp(),
+          lastMessage: roleInfo.starter,
+          messageCount: 0,
+          totalScore: 0
+        };
+        await setDoc(newConversationRef, newConversation);
+        
+        const newDocId = newConversationRef.id;
+        setLocalConversationId(newDocId);
+
+        const initialMessageForDb = { ...initialAiMessage, timestamp: serverTimestamp() };
+        await addDoc(collection(firestore, 'conversations', newDocId, 'messages'), initialMessageForDb);
+        
+        router.replace(`/chat/${categoryId}?role=${roleId}&conversationId=${newDocId}`);
+      };
+      createConversation();
+    }
+  }, [conversationId, user, firestore, categoryId, roleId, roleInfo.starter, router, messages.length, messagesLoading, initialAiMessage]);
+
+
+  const initialMessages = messages.length > 0 ? messages : [initialAiMessage];
+
+  if (userLoading || (!localConversationId && !messagesLoading) || (localConversationId && messagesLoading && !messages.length)) {
+      return (
+          <div className="flex items-center justify-center h-screen">
+              <div className="text-lg">Loading chat...</div>
+          </div>
+      )
+  }
 
   return (
     <div className="flex flex-col h-screen bg-muted/20">
       <header className="sticky top-0 z-10 flex items-center h-16 px-4 border-b bg-background">
         <Button asChild variant="ghost" size="icon" className="mr-2">
-          <Link href="/categories">
+          <Link href="/conversations">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
         <div className="flex items-center gap-3">
-            <categoryInfo.icon className="w-6 h-6 text-primary"/>
-            <div>
-                <h1 className="text-lg font-semibold tracking-tight">{categoryInfo.name}</h1>
-                <p className="text-sm text-muted-foreground">{roleInfo.name}</p>
-            </div>
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              <Bot className="h-5 w-5" />
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-lg font-semibold tracking-tight">{roleInfo.name}</h1>
+            <p className="text-sm text-muted-foreground">{categoryInfo.name}</p>
+          </div>
         </div>
       </header>
-      <ChatInterface category={params.category} role={roleInfo.id} initialMessages={initialMessages} />
+      <ChatInterface
+        category={categoryId}
+        role={roleInfo.id}
+        initialMessages={initialMessages}
+        conversationId={localConversationId}
+       />
     </div>
   );
 }

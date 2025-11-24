@@ -1,5 +1,5 @@
 import { Briefcase, MessageSquare, Heart, Users } from 'lucide-react';
-import type { CategoryInfo, PerformanceData, RecentMistake } from './types';
+import type { CategoryInfo } from './types';
 
 export const categories: CategoryInfo[] = [
   {
@@ -35,18 +35,19 @@ export const categories: CategoryInfo[] = [
         { id: 'dinner-conversation', name: 'Dinner Conversation', starter: "This food is amazing! Have you tried the risotto?" },
     ]
   },
-  {
-    id: 'special-needs-support',
-    name: 'Special Needs Support',
-    description: 'Communicate effectively in supportive and understanding contexts.',
+   {
+    id: 'dating',
+    name: 'Dating',
+    description: 'Navigate romantic conversations with confidence.',
     icon: Heart,
     roles: [
-        { id: 'expressing-feelings', name: 'Expressing Feelings', starter: "It's a safe space to talk. How are you feeling right now?" },
-        { id: 'offering-support', name: 'Offering Support', starter: "I'm here for you. Is there anything I can do to help?" },
-        { id: 'talk-through-challenge', name: 'Talking Through a Challenge', starter: "That sounds really tough. Can you tell me more about what's happening?" },
+        { id: 'first-date', name: 'First Date', starter: "This is a nice place! I'm glad we could do this. So, what do you do for fun?" },
+        { id: 'asking-someone-out', name: 'Asking Someone Out', starter: "Hey, I've really enjoyed talking with you. I was wondering if you'd like to get coffee sometime." },
+        { id: 'online-dating-message', name: 'Online Dating Message', starter: "Hi! I saw on your profile that you're into hiking. Me too! What's your favorite trail?" },
     ]
   },
 ];
+<<<<<<< HEAD
 
 export const analyticsSummary = {
   messageCount: 124,
@@ -121,3 +122,5 @@ export const openChats = [
     lastMessageSnippet: "Great to meet you — let's connect soon."
   }
 ]
+=======
+>>>>>>> 9862010c71e3ec3ed7576961659f90718861b1c8

@@ -1,32 +1,66 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartTooltip, ChartTooltipContent, ChartContainer } from '@/components/ui/chart';
-import { performanceHistory } from '@/lib/data';
-import type { PerformanceData } from '@/lib/types';
+import { ChartTooltip, ChartTooltipContent, ChartContainer, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { useTheme } from '../ThemeProvider';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useMemo } from 'react';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { Conversation, PerformanceData } from '@/lib/types';
+import { format } from 'date-fns';
 
 const chartConfig = {
-  grammar: { label: 'Grammar', color: 'hsl(var(--chart-1))' },
-  tone: { label: 'Tone', color: 'hsl(var(--chart-2))' },
-  clarity: { label: 'Clarity', color: 'hsl(var(--chart-3))' },
-  pragmatics: { label: 'Pragmatics', color: 'hsl(var(--chart-4))' },
+  avg: { label: 'Average', color: 'hsl(var(--chart-1))' },
 };
 
 export function PerformanceChart() {
   const { theme } = useTheme();
   const tickColor = theme === 'dark' ? '#888' : '#333';
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const conversationsQuery = useMemo(() => {
+    if (!user?.uid || !firestore) return null;
+    return query(collection(firestore, 'conversations'), where('userId', '==', user.uid), orderBy('timestamp', 'desc'), limit(7));
+  }, [user?.uid, firestore]);
+
+  const { data: conversations, loading } = useCollection<Conversation>(conversationsQuery);
+  
+  const performanceHistory: PerformanceData[] = useMemo(() => {
+    if (!conversations) return [];
+    
+    return conversations.map(convo => {
+      const avg = (convo.totalScore && convo.messageCount) ? Math.round(convo.totalScore / convo.messageCount) : 0;
+      let date = format(new Date(), 'MMM d');
+      if (convo.timestamp) {
+        const timestamp = (convo.timestamp as any).toDate ? (convo.timestamp as any).toDate() : new Date(convo.timestamp);
+        date = format(timestamp, 'MMM d');
+      }
+        
+      return {
+        date,
+        avg,
+        grammar: 0, // Placeholder, not used in chart
+        tone: 0, // Placeholder
+        clarity: 0, // Placeholder
+        pragmatics: 0, // Placeholder
+      }
+    }).reverse();
+
+  }, [conversations]);
 
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Performance Over Time</CardTitle>
-        <CardDescription>Your average scores for the last 7 days.</CardDescription>
+        <CardDescription>Your average scores for the last 7 conversations.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+          {loading && <div>Loading...</div>}
+          {!loading && performanceHistory.length === 0 && <div className="text-center text-muted-foreground py-8">Not enough data to display chart.</div>}
+        {performanceHistory.length > 0 && <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={performanceHistory} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid vertical={false} />
@@ -48,13 +82,11 @@ export function PerformanceChart() {
                 cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
               />
-              <Bar dataKey="grammar" fill="var(--color-grammar)" radius={4} />
-              <Bar dataKey="tone" fill="var(--color-tone)" radius={4} />
-              <Bar dataKey="clarity" fill="var(--color-clarity)" radius={4} />
-              <Bar dataKey="pragmatics" fill="var(--color-pragmatics)" radius={4} />
+               <Legend content={<ChartLegendContent />} />
+              <Bar dataKey="avg" fill="var(--color-avg)" radius={4} />
             </BarChart>
           </ResponsiveContainer>
-        </ChartContainer>
+        </ChartContainer>}
       </CardContent>
     </Card>
   );

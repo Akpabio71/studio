@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "photoURL": {
+            "type": "string",
+            "description": "The URL of the user's profile picture."
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "conversation": {
+      "title": "Conversation",
+      "description": "A conversation between a user and the AI.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "lastMessage": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "messageCount": {
+          "type": "number"
+        },
+        "totalScore": {
+          "type": "number"
+        }
+      },
+      "required": ["userId", "category", "role", "timestamp"]
+    },
+    "message": {
+        "title": "Message",
+        "description": "A message in a conversation.",
+        "type": "object",
+        "properties": {
+            "sender": {
+                "type": "string",
+                "enum": ["user", "ai"]
+            },
+            "text": {
+                "type": "string"
+            },
+            "timestamp": {
+                "type": "number"
+            },
+            "feedback": {
+                "type": "object",
+                "properties": {}
+            },
+            "avgRating": {
+              "type": "number"
+            }
+        },
+        "required": ["sender", "text", "timestamp"]
+    },
+    "userSettings": {
+      "title": "User Settings",
+      "description": "User-specific application settings.",
+      "type": "object",
+      "properties": {
+        "language": { "type": "string" },
+        "goal": { "type": "string" },
+        "experienceLevel": { "type": "string" },
+        "asdFriendlyMode": { "type": "boolean" },
+        "fontSize": { "type": "string" },
+        "textToSpeech": { "type": "boolean" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/userProfile"
+      },
+      "description": "User profile documents."
+    },
+    "/conversations/{conversationId}": {
+      "schema": {
+        "$ref": "#/entities/conversation"
+      },
+      "description": "Conversation documents."
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+        "schema": {
+            "$ref": "#/entities/message"
+        },
+        "description": "Messages within a conversation."
+    },
+    "/userSettings/{userId}": {
+      "schema": {
+        "$ref": "#/entities/userSettings"
+      },
+      "description": "Stores user-specific settings."
+    }
+  }
+}

@@ -9,6 +9,7 @@ import { ResponseSuggestions } from './ResponseSuggestions';
 import { DetailedFeedback } from './DetailedFeedback';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/firebase';
 
 interface ChatMessageProps {
   message: Message;
@@ -16,28 +17,29 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const isUser = message.sender === 'user';
+  const isUserSender = message.sender === 'user';
+  const { user } = useUser();
 
   return (
-    <div className={cn('flex items-start gap-3', isUser ? 'justify-end' : 'justify-start')}>
-      {!isUser && (
+    <div className={cn('flex items-start gap-3', isUserSender ? 'justify-end' : 'justify-start')}>
+      {!isUserSender && (
         <Avatar className="h-8 w-8">
           <AvatarFallback className="bg-primary text-primary-foreground">
             <Bot className="h-5 w-5" />
           </AvatarFallback>
         </Avatar>
       )}
-      <div className={cn('max-w-md w-full space-y-2', isUser ? 'order-1' : 'order-2')}>
+      <div className={cn('max-w-md w-full space-y-2', isUserSender ? 'order-1' : 'order-2')}>
         <div
           className={cn(
             'p-3 rounded-lg',
-            isUser ? 'bg-primary text-primary-foreground' : 'bg-card border'
+            isUserSender ? 'bg-primary text-primary-foreground' : 'bg-card border'
           )}
         >
-          <p className="text-base">{message.text}</p>
+          <p className="text-base whitespace-pre-wrap">{message.text}</p>
         </div>
 
-        {isUser && message.feedback && (
+        {isUserSender && message.feedback && (
           <Collapsible open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
             <div className="p-3 rounded-lg bg-card border space-y-4">
               <ResponseRating rating={message.feedback.rating} />
@@ -57,8 +59,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </Collapsible>
         )}
       </div>
-      {isUser && (
+      {isUserSender && (
          <Avatar className="h-8 w-8 order-2">
+           {user?.photoURL && <Avatar.Image src={user.photoURL} />}
           <AvatarFallback>
             <User className="h-5 w-5" />
           </AvatarFallback>

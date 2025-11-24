@@ -5,7 +5,7 @@ export function Logo({ className, iconClassName }: { className?: string, iconCla
   return (
     <div className={cn('flex items-center gap-2 text-2xl font-bold font-headline text-primary', className)}>
       <MessageCircle className={cn('h-7 w-7', iconClassName)} />
-      <h1 className="tracking-tight">VerbalEdge</h1>
+      <h1 className="tracking-tight">Chat Sense</h1>
     </div>
   );
 }

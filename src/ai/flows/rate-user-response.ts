@@ -15,18 +15,32 @@ import {z} from 'genkit';
 const RateUserResponseInputSchema = z.object({
   message: z.string().describe('The user message to be rated.'),
   category: z.string().describe('The category of the conversation (e.g., Business, Casual).'),
+  role: z.string().describe('The specific role-play scenario within the category (e.g., Sales Pitch).'),
+  previousMessage: z.string().describe("The AI's last message to the user."),
 });
 
 export type RateUserResponseInput = z.infer<typeof RateUserResponseInputSchema>;
 
 const RateUserResponseOutputSchema = z.object({
-  grammar: z.number().describe('Rating (0-100) for grammar accuracy.'),
-  tone: z.number().describe('Rating (0-100) for appropriateness of tone.'),
-  clarity: z.number().describe('Rating (0-100) for clarity and conciseness.'),
-  pragmaticEffectiveness: z
-    .number()
-    .describe('Rating (0-100) for how effectively the message achieves its intended purpose.'),
-  detailedFeedback: z.string().optional().describe('Detailed feedback and corrections.'),
+  rating: z.object({
+    grammar: z.number().min(0).max(100).describe('Rating (0-100) for grammar accuracy.'),
+    tone: z.number().min(0).max(100).describe('Rating (0-100) for appropriateness of tone.'),
+    clarity: z.number().min(0).max(100).describe('Rating (0-100) for clarity and conciseness.'),
+    pragmaticEffectiveness: z
+      .number().min(0).max(100)
+      .describe('Rating (0-100) for how effectively the message achieves its intended purpose.'),
+    briefExplanation: z.string().optional().describe('A brief (1-2 sentence) explanation of the overall ratings.'),
+  }),
+  suggestions: z.object({
+    suggestions: z.array(z.string()).length(3).describe('An array of three alternative response suggestions for the user.'),
+  }),
+  detailedFeedback: z.object({
+    grammarFeedback: z.string().describe('Detailed feedback on grammar, including corrections.'),
+    toneFeedback: z.string().describe('Detailed feedback on the tone of the message.'),
+    clarityFeedback: z.string().describe('Detailed feedback on the clarity of the message.'),
+    pragmaticFeedback: z.string().describe('Detailed feedback on the pragmatic effectiveness of the message.'),
+    correctedMessage: z.string().describe('The corrected version of the user\'s message.'),
+  })
 });
 
 export type RateUserResponseOutput = z.infer<typeof RateUserResponseOutputSchema>;
@@ -39,15 +53,26 @@ const rateUserResponsePrompt = ai.definePrompt({
   name: 'rateUserResponsePrompt',
   input: {schema: RateUserResponseInputSchema},
   output: {schema: RateUserResponseOutputSchema},
-  prompt: `You are an AI assistant designed to evaluate user messages and provide feedback.
+  prompt: `You are an AI assistant designed to evaluate user messages and provide comprehensive feedback to help them improve their communication skills.
 
-  Rate the following message on a scale of 0-100 for grammar, tone, clarity, and pragmatic effectiveness, considering that the conversation category is "{{category}}".
+  The user is practicing in the following scenario:
+  - Conversation Category: "{{category}}"
+  - Conversation Role: "{{role}}"
+  
+  The last message from the AI was:
+  "{{{previousMessage}}}"
 
-  Message: {{{message}}}
+  The user replied with:
+  "{{{message}}}"
 
-  Provide detailed feedback with corrections, and generate an explanation for each of the rating scores assigned to grammar, tone, clarity, and pragmaticEffectiveness.
+  Your task is to perform the following actions:
+  1.  **Rate the user's message**: On a scale of 0-100, rate it for grammar, tone, clarity, and pragmatic effectiveness. Provide a brief, one-sentence overall explanation for your ratings.
+  2.  **Provide detailed feedback**: Explain the ratings for each category (grammar, tone, clarity, pragmatics) and provide a fully corrected version of the user's message.
+  3.  **Generate response suggestions**: Provide exactly three alternative suggestions for how the user could have replied to the AI's last message. These suggestions should be natural and effective within the conversational context.
 
-  Ensure that the output is in JSON format.  The "detailedFeedback" should include specific suggestions for improvement and be limited to 2-3 sentences.`,config: {
+  Please provide the full analysis in a single JSON object matching the required output schema.
+  `,
+  config: {
     safetySettings: [
       {
         category: 'HARM_CATEGORY_HATE_SPEECH',

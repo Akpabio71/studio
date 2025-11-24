@@ -1,11 +1,11 @@
-import { RateUserResponseOutput } from '@/ai/flows/rate-user-response';
+import { AIFeedback } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 
 interface ResponseRatingProps {
-  rating: RateUserResponseOutput;
+  rating: AIFeedback['rating'];
 }
 
-const metrics: (keyof Omit<RateUserResponseOutput, 'detailedFeedback'>)[] = [
+const metrics: (keyof Omit<AIFeedback['rating'], 'briefExplanation'>)[] = [
   'grammar',
   'tone',
   'clarity',
@@ -33,9 +33,9 @@ export function ResponseRating({ rating }: ResponseRatingProps) {
           </div>
         ))}
       </div>
-      {rating.detailedFeedback && (
+      {rating.briefExplanation && (
         <p className="text-xs text-muted-foreground italic">
-          "{rating.detailedFeedback}"
+          "{rating.briefExplanation}"
         </p>
       )}
     </div>
