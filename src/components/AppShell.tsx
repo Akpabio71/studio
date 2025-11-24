@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutDashboard, Settings, Menu, X, LogOut, Plus } from 'lucide-react';
+import { Home, LayoutDashboard, Settings, User, Menu, X, LogOut, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
@@ -16,6 +16,7 @@ import { useUnreadCount } from '@/hooks/use-unread-count'
 const navItems = [
   { href: '/categories', icon: Home, label: 'Home' },
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/profile', icon: User, label: 'Profile' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
