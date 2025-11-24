@@ -1,9 +1,7 @@
 import { AppShell } from '@/components/AppShell';
-import { AnalyticsSummary } from '@/components/dashboard/AnalyticsSummary';
-import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { recentMistakes } from '@/lib/data';
+import { categories } from '@/lib/data';
+import { getOpenChats } from '@/lib/chats';
 
 export default function DashboardPage() {
   return (
@@ -17,42 +15,43 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <AnalyticsSummary />
+          <div>
+            <h2 className="text-xl font-semibold">Open Chats</h2>
+            <p className="mt-1 text-muted-foreground">Continue recent conversations or jump back into practice.</p>
+          </div>
 
-          <PerformanceChart />
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Mistakes</CardTitle>
-              <CardDescription>
-                Review recent corrections to learn and improve.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/3">Original</TableHead>
-                    <TableHead className="w-1/3">Corrected</TableHead>
-                    <TableHead className="w-1/3 text-right">Category</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentMistakes.map(mistake => (
-                    <TableRow key={mistake.id}>
-                      <TableCell className="font-medium text-muted-foreground line-through">
-                        {mistake.original}
-                      </TableCell>
-                      <TableCell className="text-green-600 dark:text-green-400 font-medium">
-                        {mistake.corrected}
-                      </TableCell>
-                      <TableCell className="text-right">{mistake.category}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {getOpenChats().map(chat => {
+              const category = categories.find(c => c.id === chat.categoryId);
+              return (
+                <Card key={chat.id} className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                          <CardTitle className="text-lg">{chat.name}</CardTitle>
+                          <CardDescription className="mt-1">{category?.name}</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {chat.unread > 0 && (
+                            <span className="inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs px-2 py-0.5">{chat.unread}</span>
+                          )}
+                          <div className="text-sm text-muted-foreground">{new Date(chat.updatedAt).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <a href={`/chat/${chat.categoryId}?role=${chat.roleId}`} className="text-primary underline">Open</a>
+                      <div className="text-xs text-muted-foreground">Role: {chat.roleId}</div>
+                    </div>
+                    {chat.lastMessageSnippet && (
+                      <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{chat.lastMessageSnippet}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
         </div>
       </div>
     </AppShell>

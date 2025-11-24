@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
+import { categories } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './ChatMessage';
 import type { Message } from '@/lib/types';
-import { getAIFeedback } from '@/lib/actions';
+// Call the server via a standard API route instead of importing server actions directly
 import { Skeleton } from '../ui/skeleton';
 
 interface ChatInterfaceProps {
@@ -17,6 +18,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ category, role, initialMessages }: ChatInterfaceProps) {
+  const categoryInfo = categories.find(c => c.id === category);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -51,23 +53,45 @@ export function ChatInterface({ category, role, initialMessages }: ChatInterface
     setInput('');
     setIsLoading(true);
 
-    const result = await getAIFeedback(input, category, role, lastAIMessage?.text || '');
+    try {
+      const res = await fetch('/api/genai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input, category, role, previousMessage: lastAIMessage?.text || '' }),
+      });
 
-    setMessages(prev =>
-      prev.map(msg =>
-        msg.id === userMessage.id ? { ...msg, feedback: result.feedback } : msg
-      )
-    );
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
 
-    const aiMessage: Message = {
-      id: `ai-${Date.now()}`,
-      text: result.aiReply,
-      sender: 'ai',
-      timestamp: Date.now(),
-    };
+      const data = await res.json();
+      const reply = data?.reply ?? 'Sorry, I could not get a response.';
 
-    setMessages(prev => [...prev, aiMessage]);
-    setIsLoading(false);
+      // Optionally attach placeholder feedback until server-side feedback is wired
+      setMessages(prev =>
+        prev.map(msg => (msg.id === userMessage.id ? { ...msg, feedback: undefined } : msg))
+      );
+
+      const aiMessage: Message = {
+        id: `ai-${Date.now()}`,
+        text: reply,
+        sender: 'ai',
+        timestamp: Date.now(),
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (err) {
+      console.error('Chat send error', err);
+      const errMessage: Message = {
+        id: `ai-error-${Date.now()}`,
+        text: "Sorry — something went wrong. Try again later.",
+        sender: 'ai',
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, errMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -79,6 +103,17 @@ export function ChatInterface({ category, role, initialMessages }: ChatInterface
 
   return (
     <div className="flex flex-col h-full">
+      <div className="flex items-center gap-3 px-4 py-3 border-b bg-background">
+        {categoryInfo && (
+          <div className="flex items-center gap-3">
+            <categoryInfo.icon className="w-6 h-6 text-primary" />
+            <div>
+              <div className="text-sm font-semibold">{categoryInfo.name}</div>
+              <div className="text-xs text-muted-foreground">Role: {role}</div>
+            </div>
+          </div>
+        )}
+      </div>
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-6">
           {messages.map(message => (

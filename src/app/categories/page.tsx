@@ -14,10 +14,12 @@ export default function CategoriesPage() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map(category => (
-            <Card key={category.id} className="h-full flex flex-col hover:border-primary transition-colors duration-300 hover:shadow-lg">
+            <Card key={category.id} className="h-full flex flex-col transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <category.icon className="w-8 h-8 text-primary" />
+                    <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/20">
+                      <category.icon className="w-6 h-6 text-primary" />
+                    </div>
                     <CardTitle>{category.name}</CardTitle>
                   </div>
                 </CardHeader>

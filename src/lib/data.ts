@@ -90,3 +90,34 @@ export const profileSettings = {
     goal: 'confidence',
     experienceLevel: 'intermediate',
 };
+
+// Mock open chats for dashboard display
+export const openChats = [
+  {
+    id: 'chat-1',
+    name: 'Quarterly pitch prep',
+    categoryId: 'business',
+    roleId: 'sales-pitch',
+    updatedAt: '2025-11-20T12:34:00Z',
+    unread: 2,
+    lastMessageSnippet: 'Let me walk you through the key metrics...'
+  },
+  {
+    id: 'chat-2',
+    name: 'Weekend plans with Alex',
+    categoryId: 'casual',
+    roleId: 'making-plans',
+    updatedAt: '2025-11-22T09:12:00Z',
+    unread: 0,
+    lastMessageSnippet: "Sure — I'm free Saturday afternoon."
+  },
+  {
+    id: 'chat-3',
+    name: 'Networking follow-up',
+    categoryId: 'social',
+    roleId: 'networking-event',
+    updatedAt: '2025-11-23T18:05:00Z',
+    unread: 1,
+    lastMessageSnippet: "Great to meet you — let's connect soon."
+  }
+]
